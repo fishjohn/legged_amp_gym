@@ -37,42 +37,45 @@ MOTION_FILES = glob.glob('datasets/model_base_motions/*')
 class A1AMPCfg( LeggedRobotCfg ):
 
     class env( LeggedRobotCfg.env ):
-        num_envs = 5480
+        num_envs = 4096
         include_history_steps = None  # Number of steps of history to include.
-        num_observations = 42
+        num_observations = 48
         num_privileged_obs = 48
         reference_state_initialization = True
         reference_state_initialization_prob = 0.85
         amp_motion_files = MOTION_FILES
 
+    class sim( LeggedRobotCfg.sim ):
+        dt = 0.02
+
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-            'FL_hip_joint': 0.0,   # [rad]
-            'RL_hip_joint': 0.0,   # [rad]
-            'FR_hip_joint': 0.0 ,  # [rad]
-            'RR_hip_joint': 0.0,   # [rad]
+            'FL_hip_joint': -0.20,   # [rad]
+            'RL_hip_joint': -0.20,   # [rad]
+            'FR_hip_joint':  0.20,  # [rad]
+            'RR_hip_joint':  0.20,   # [rad]
 
-            'FL_thigh_joint': 0.9,     # [rad]
-            'RL_thigh_joint': 0.9,   # [rad]
-            'FR_thigh_joint': 0.9,     # [rad]
-            'RR_thigh_joint': 0.9,   # [rad]
+            'FL_thigh_joint': 0.72,     # [rad]
+            'RL_thigh_joint': 0.72,   # [rad]
+            'FR_thigh_joint': 0.72,     # [rad]
+            'RR_thigh_joint': 0.72,   # [rad]
 
-            'FL_calf_joint': -1.8,   # [rad]
-            'RL_calf_joint': -1.8,    # [rad]
-            'FR_calf_joint': -1.8,  # [rad]
-            'RR_calf_joint': -1.8,    # [rad]
+            'FL_calf_joint': -1.44,   # [rad]
+            'RL_calf_joint': -1.44,    # [rad]
+            'FR_calf_joint': -1.44,  # [rad]
+            'RR_calf_joint': -1.44,    # [rad]
         }
 
     class control( LeggedRobotCfg.control ):
         # PD Drive parameters:
         control_type = 'P'
-        stiffness = {'joint': 80.}  # [N*m/rad]
+        stiffness = {'joint': 20.}  # [N*m/rad]
         damping = {'joint': 1.0}     # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
         # decimation: Number of control action updates @ sim DT per policy DT
-        decimation = 6
+        decimation = 4
 
     class terrain( LeggedRobotCfg.terrain ):
         mesh_type = 'plane'
@@ -85,7 +88,7 @@ class A1AMPCfg( LeggedRobotCfg ):
         terminate_after_contacts_on = [
             "base", "FL_calf", "FR_calf", "RL_calf", "RR_calf",
             "FL_thigh", "FR_thigh", "RL_thigh", "RR_thigh"]
-        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
+        self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
   
     class domain_rand:
         randomize_friction = True
@@ -112,22 +115,22 @@ class A1AMPCfg( LeggedRobotCfg ):
 
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.25
+        base_height_target = 0.3
         class scales( LeggedRobotCfg.rewards.scales ):
             termination = 0.0
-            tracking_lin_vel = 1.5 * 1. / (.005 * 6)
-            tracking_ang_vel = 0.5 * 1. / (.005 * 6)
+            tracking_lin_vel = 1.0
+            tracking_ang_vel = 0.5
             lin_vel_z = 0.0
             ang_vel_xy = 0.0
             orientation = 0.0
-            torques = -0.00001 * 1. / (.005 * 6)
+            torques = -0.00001
             dof_vel = 0.0
-            dof_acc = -2.5e-7 * 1. / (.005 * 6)
+            dof_acc = -2.5e-7
             base_height = 0.0 
-            feet_air_time =  -1.0 * 1. / (.005 * 6)
-            collision = -0.1 * 1. / (.005 * 6)
+            feet_air_time = 1.0
+            collision = -0.1
             feet_stumble = 0.0 
-            action_rate = -0.1 * 1. / (.005 * 6)
+            action_rate = -0.1
             stand_still = 0.0
             dof_pos_limits = 0.0
 
@@ -145,6 +148,10 @@ class A1AMPCfg( LeggedRobotCfg ):
 
 class A1AMPCfgPPO( LeggedRobotCfgPPO ):
     runner_class_name = 'AMPOnPolicyRunner'
+
+    class policy( LeggedRobotCfgPPO.policy ):
+        actor_hidden_dims = [256, 128, 64]
+
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
         amp_replay_buffer_size = 1000000
@@ -158,10 +165,10 @@ class A1AMPCfgPPO( LeggedRobotCfgPPO ):
         policy_class_name = 'ActorCritic'
         max_iterations = 500000 # number of policy updates
 
-        amp_reward_coef = 2.0
+        amp_reward_coef = 0.5
         amp_motion_files = MOTION_FILES
         amp_num_preload_transitions = 2000000
-        amp_task_reward_lerp = 0.3
+        amp_task_reward_lerp = 0.3 # Not use
         amp_discr_hidden_dims = [1024, 512]
 
         min_normalized_std = [0.05, 0.02, 0.05] * 4
