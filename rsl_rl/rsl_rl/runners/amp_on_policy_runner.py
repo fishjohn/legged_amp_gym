@@ -121,6 +121,8 @@ class AMPOnPolicyRunner:
         rewbuffer = deque(maxlen=100)
         lenbuffer = deque(maxlen=100)
         cur_reward_sum = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
+        task_reward_sum = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
+        amp_reward_sum = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
         cur_episode_length = torch.zeros(self.env.num_envs, dtype=torch.float, device=self.device)
 
         tot_iter = self.current_learning_iteration + num_learning_iterations
@@ -130,30 +132,36 @@ class AMPOnPolicyRunner:
             with torch.inference_mode():
                 for i in range(self.num_steps_per_env):
                     actions = self.alg.act(obs, critic_obs, amp_obs)
-                    obs, privileged_obs, rewards, dones, infos, reset_env_ids, terminal_amp_states = self.env.step(actions)
+                    obs, privileged_obs, task_rewards, dones, infos, reset_env_ids, terminal_amp_states = self.env.step(actions)
                     next_amp_obs = self.env.get_amp_observations()
 
                     critic_obs = privileged_obs if privileged_obs is not None else obs
-                    obs, critic_obs, next_amp_obs, rewards, dones = obs.to(self.device), critic_obs.to(self.device), next_amp_obs.to(self.device), rewards.to(self.device), dones.to(self.device)
+                    obs, critic_obs, next_amp_obs, task_rewards, dones = obs.to(self.device), critic_obs.to(self.device), next_amp_obs.to(self.device), task_rewards.to(self.device), dones.to(self.device)
 
                     # Account for terminal states.
                     next_amp_obs_with_term = torch.clone(next_amp_obs)
                     next_amp_obs_with_term[reset_env_ids] = terminal_amp_states
 
-                    rewards = self.alg.discriminator.predict_amp_reward(
-                        amp_obs, next_amp_obs_with_term, rewards, normalizer=self.alg.amp_normalizer)[0]
+                    tot_rewards, amp_rewards = self.alg.discriminator.predict_amp_reward(
+                        amp_obs, next_amp_obs_with_term, task_rewards, normalizer=self.alg.amp_normalizer)
+                    task_reward_sum += task_rewards
+                    amp_reward_sum += amp_rewards
                     amp_obs = torch.clone(next_amp_obs)
-                    self.alg.process_env_step(rewards, dones, infos, next_amp_obs_with_term)
+                    self.alg.process_env_step(tot_rewards, dones, infos, next_amp_obs_with_term)
                     
                     if self.log_dir is not None:
                         # Book keeping
                         if 'episode' in infos:
+                            infos["episode"]["rew_amp"] = torch.mean(amp_reward_sum[reset_env_ids]) / self.env.max_episode_length_s
+                            infos["episode"]["rew_task"] = torch.mean(task_reward_sum[reset_env_ids]) / self.env.max_episode_length_s
                             ep_infos.append(infos['episode'])
-                        cur_reward_sum += rewards
+                        cur_reward_sum += tot_rewards
                         cur_episode_length += 1
                         new_ids = (dones > 0).nonzero(as_tuple=False)
                         rewbuffer.extend(cur_reward_sum[new_ids][:, 0].cpu().numpy().tolist())
                         lenbuffer.extend(cur_episode_length[new_ids][:, 0].cpu().numpy().tolist())
+                        amp_reward_sum[new_ids] = 0
+                        task_reward_sum[new_ids] = 0
                         cur_reward_sum[new_ids] = 0
                         cur_episode_length[new_ids] = 0
 

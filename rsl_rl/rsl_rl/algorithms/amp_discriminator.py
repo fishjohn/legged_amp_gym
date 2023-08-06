@@ -64,7 +64,7 @@ class AMPDiscriminator(nn.Module):
             disc_reward = self.amp_reward_coef * torch.clamp(1 - (1/4) * torch.square(d - 1), min=0)
             reward = task_reward.unsqueeze(-1) + disc_reward
             self.train()
-        return reward.squeeze(), disc_reward
+        return reward.squeeze(), disc_reward.squeeze()
 
     def _lerp_reward(self, disc_r, task_r):
         r = (1.0 - self.task_reward_lerp) * disc_r + self.task_reward_lerp * task_r

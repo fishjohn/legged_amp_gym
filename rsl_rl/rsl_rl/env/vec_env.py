@@ -39,6 +39,7 @@ class VecEnv(ABC):
     num_privileged_obs: int
     num_actions: int
     max_episode_length: int
+    episode_length_s: float
     privileged_obs_buf: torch.Tensor
     obs_buf: torch.Tensor 
     rew_buf: torch.Tensor
