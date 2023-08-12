@@ -118,16 +118,19 @@ class A1AMPCfg( LeggedRobotCfg ):
         base_height_target = 0.3
         class scales( LeggedRobotCfg.rewards.scales ):
             termination = 0.0
+            # task rewarad
             tracking_lin_vel = 1.0
             tracking_ang_vel = 0.5
             lin_vel_z = 0.0
             ang_vel_xy = 0.0
             orientation = 0.0
-            torques = -0.00001
-            dof_vel = 0.0
+            # smoothness
+            torques = -1e-4
             dof_acc = -2.5e-7
+            dof_vel = 0.0
             base_height = 0.0 
             feet_air_time = 1.0
+            # safety
             collision = -0.1
             feet_stumble = 0.0 
             action_rate = -0.1
