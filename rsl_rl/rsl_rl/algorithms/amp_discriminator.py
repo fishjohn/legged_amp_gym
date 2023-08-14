@@ -7,20 +7,26 @@ from rsl_rl.utils import utils
 
 
 class AMPDiscriminator(nn.Module):
-    def __init__(
-            self, input_dim, amp_reward_coef, hidden_layer_sizes, device, task_reward_lerp=0.0):
+    def __init__(self, 
+                 input_dim, 
+                 amp_reward_coef, 
+                 hidden_layer_sizes, 
+                 device, 
+                 task_reward_lerp=0.0):
+        
         super(AMPDiscriminator, self).__init__()
 
         self.device = device
         self.input_dim = input_dim
-
         self.amp_reward_coef = amp_reward_coef
+
         amp_layers = []
         curr_in_dim = input_dim
         for hidden_dim in hidden_layer_sizes:
             amp_layers.append(nn.Linear(curr_in_dim, hidden_dim))
             amp_layers.append(nn.ReLU())
             curr_in_dim = hidden_dim
+
         self.trunk = nn.Sequential(*amp_layers).to(device)
         self.amp_linear = nn.Linear(hidden_layer_sizes[-1], 1).to(device)
 
@@ -52,8 +58,11 @@ class AMPDiscriminator(nn.Module):
         grad_pen = lambda_ * (grad.norm(2, dim=1) - 0).pow(2).mean()
         return grad_pen
 
-    def predict_amp_reward(
-            self, state, next_state, task_reward, normalizer=None):
+    def predict_amp_reward(self, 
+                           state, 
+                           next_state, 
+                           task_reward, 
+                           normalizer=None):
         with torch.no_grad():
             self.eval()
             if normalizer is not None:
@@ -64,6 +73,7 @@ class AMPDiscriminator(nn.Module):
             disc_reward = self.amp_reward_coef * torch.clamp(1 - (1/4) * torch.square(d - 1), min=0)
             reward = task_reward.unsqueeze(-1) + disc_reward
             self.train()
+            
         return reward.squeeze(), disc_reward.squeeze()
 
     def _lerp_reward(self, disc_r, task_r):

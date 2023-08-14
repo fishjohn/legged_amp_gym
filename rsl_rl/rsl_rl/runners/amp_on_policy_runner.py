@@ -57,42 +57,63 @@ class AMPOnPolicyRunner:
         self.policy_cfg = train_cfg["policy"]
         self.device = device
         self.env = env
+
         if self.env.num_privileged_obs is not None:
             num_critic_obs = self.env.num_privileged_obs 
         else:
             num_critic_obs = self.env.num_obs
         actor_critic_class = eval(self.cfg["policy_class_name"]) # ActorCritic
+        
         if self.env.include_history_steps is not None:
             num_actor_obs = self.env.num_obs * self.env.include_history_steps
         else:
             num_actor_obs = self.env.num_obs
+
+        # define the actor-critic alg
         actor_critic: ActorCritic = actor_critic_class( num_actor_obs=num_actor_obs,
                                                         num_critic_obs=num_critic_obs,
                                                         num_actions=self.env.num_actions,
                                                         **self.policy_cfg).to(self.device)
 
+        # load dataset, define the normalizer
         amp_data = AMPLoader(
             device, time_between_frames=self.env.dt, preload_transitions=True,
             num_preload_transitions=train_cfg['runner']['amp_num_preload_transitions'],
             motion_files=self.cfg["amp_motion_files"])
         amp_normalizer = Normalizer(amp_data.observation_dim)
+
+        # define discriminator
         discriminator = AMPDiscriminator(
             amp_data.observation_dim * 2,
             train_cfg['runner']['amp_reward_coef'],
-            train_cfg['runner']['amp_discr_hidden_dims'], device,
+            train_cfg['runner']['amp_discr_hidden_dims'], 
+            device,
             train_cfg['runner']['amp_task_reward_lerp']).to(self.device)
-
         # self.discr: AMPDiscriminator = AMPDiscriminator()
-        alg_class = eval(self.cfg["algorithm_class_name"]) # PPO
+
+        # define AMPPPO
+        alg_class = eval(self.cfg["algorithm_class_name"]) # AMPPPO
         min_std = (
             torch.tensor(self.cfg["min_normalized_std"], device=self.device) *
             (torch.abs(self.env.dof_pos_limits[:, 1] - self.env.dof_pos_limits[:, 0])))
-        self.alg: PPO = alg_class(actor_critic, discriminator, amp_data, amp_normalizer, device=self.device, min_std=min_std, **self.alg_cfg)
+        
+        self.alg: AMPPPO = alg_class(actor_critic, 
+                                  discriminator, 
+                                  amp_data, 
+                                  amp_normalizer, 
+                                  device=self.device, 
+                                  min_std=min_std, 
+                                  **self.alg_cfg)
+        
         self.num_steps_per_env = self.cfg["num_steps_per_env"]
         self.save_interval = self.cfg["save_interval"]
 
         # init storage and model
-        self.alg.init_storage(self.env.num_envs, self.num_steps_per_env, [num_actor_obs], [self.env.num_privileged_obs], [self.env.num_actions])
+        self.alg.init_storage(self.env.num_envs, 
+                              self.num_steps_per_env, 
+                              [num_actor_obs], 
+                              [self.env.num_privileged_obs], 
+                              [self.env.num_actions])
 
         # Log
         self.log_dir = log_dir
@@ -109,14 +130,20 @@ class AMPOnPolicyRunner:
             self.writer = SummaryWriter(log_dir=self.log_dir, flush_secs=10)
         if init_at_random_ep_len:
             self.env.episode_length_buf = torch.randint_like(self.env.episode_length_buf, high=int(self.env.max_episode_length))
+        
+        # gain the initial observation
         obs = self.env.get_observations()
         privileged_obs = self.env.get_privileged_observations()
         amp_obs = self.env.get_amp_observations()
         critic_obs = privileged_obs if privileged_obs is not None else obs
+        
         obs, critic_obs, amp_obs = obs.to(self.device), critic_obs.to(self.device), amp_obs.to(self.device)
-        self.alg.actor_critic.train() # switch to train mode (for dropout for example)
+        
+        # switch to train mode (for dropout for example)
+        self.alg.actor_critic.train() 
         self.alg.discriminator.train()
 
+        # main loop for leaning
         ep_infos = []
         rewbuffer = deque(maxlen=100)
         lenbuffer = deque(maxlen=100)
@@ -133,22 +160,26 @@ class AMPOnPolicyRunner:
                 for i in range(self.num_steps_per_env):
                     actions = self.alg.act(obs, critic_obs, amp_obs)
                     obs, privileged_obs, task_rewards, dones, infos, reset_env_ids, terminal_amp_states = self.env.step(actions)
-                    next_amp_obs = self.env.get_amp_observations()
-
+                    next_amp_obs = self.env.get_amp_observations() # get amp_observation   
                     critic_obs = privileged_obs if privileged_obs is not None else obs
+                    
                     obs, critic_obs, next_amp_obs, task_rewards, dones = obs.to(self.device), critic_obs.to(self.device), next_amp_obs.to(self.device), task_rewards.to(self.device), dones.to(self.device)
 
                     # Account for terminal states.
                     next_amp_obs_with_term = torch.clone(next_amp_obs)
                     next_amp_obs_with_term[reset_env_ids] = terminal_amp_states
-
+                    
+                    # tot_rewards = r_task + r_style(r_discr)
+                    # amp_rewards = r_style(r_discr)
                     tot_rewards, amp_rewards = self.alg.discriminator.predict_amp_reward(
                         amp_obs, next_amp_obs_with_term, task_rewards, normalizer=self.alg.amp_normalizer)
                     task_reward_sum += task_rewards
                     amp_reward_sum += amp_rewards
+                    
                     amp_obs = torch.clone(next_amp_obs)
                     self.alg.process_env_step(tot_rewards, dones, infos, next_amp_obs_with_term)
                     
+                    # log info
                     if self.log_dir is not None:
                         # Book keeping
                         if 'episode' in infos:
