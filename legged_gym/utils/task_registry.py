@@ -29,17 +29,24 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
 import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
+
 from datetime import datetime
 from typing import Tuple
 import torch
 import numpy as np
 
-from rsl_rl.env import VecEnv
-from rsl_rl.runners import OnPolicyRunner, AMPOnPolicyRunner
+from vec_env import VecEnv
+from on_policy_runner import OnPolicyRunner
+from amp_on_policy_runner import AMPOnPolicyRunner
 
 from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
-from .helpers import get_args, update_cfg_from_args, class_to_dict, get_load_path, set_seed, parse_sim_params
-from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
+from helpers import get_args, update_cfg_from_args, class_to_dict, get_load_path, set_seed, parse_sim_params
+from legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 
 class TaskRegistry():
     def __init__(self):

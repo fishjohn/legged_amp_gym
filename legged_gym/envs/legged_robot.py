@@ -32,7 +32,14 @@ from legged_gym import LEGGED_GYM_ROOT_DIR, envs
 from time import time
 from warnings import WarningMessage
 import numpy as np
+
 import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../utils'))
 
 from isaacgym.torch_utils import *
 from isaacgym import gymtorch, gymapi, gymutil
@@ -42,12 +49,12 @@ from torch import Tensor
 from typing import Tuple, Dict
 
 from legged_gym import LEGGED_GYM_ROOT_DIR
-from legged_gym.envs.base.base_task import BaseTask
-from legged_gym.utils.terrain import Terrain
-from legged_gym.utils.math import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_float
-from legged_gym.utils.helpers import class_to_dict
-from .legged_robot_config import LeggedRobotCfg
-from rsl_rl.datasets.motion_loader import AMPLoader
+from base_task import BaseTask
+from terrain import Terrain
+from math_utils import quat_apply_yaw, wrap_to_pi, torch_rand_sqrt_float
+from helpers import class_to_dict
+from legged_robot_config import LeggedRobotCfg
+from motion_loader import AMPLoader
 
 
 COM_OFFSET = torch.tensor([0.012731, 0.002186, 0.000515])

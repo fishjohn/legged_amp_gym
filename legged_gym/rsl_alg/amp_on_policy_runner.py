@@ -27,9 +27,15 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
 
 import time
-import os
+
 from collections import deque
 import statistics
 
@@ -37,12 +43,14 @@ import numpy as np
 from torch.utils.tensorboard import SummaryWriter
 import torch
 
-from rsl_rl.algorithms import AMPPPO, PPO
-from rsl_rl.modules import ActorCritic, ActorCriticRecurrent
-from rsl_rl.env import VecEnv
-from rsl_rl.algorithms.amp_discriminator import AMPDiscriminator
-from rsl_rl.datasets.motion_loader import AMPLoader
-from rsl_rl.utils.utils import Normalizer
+from ppo import PPO
+from amp_ppo import AMPPPO
+from actor_critic import ActorCritic
+from actor_critic_recurrent import ActorCriticRecurrent
+from vec_env import VecEnv
+from amp_discriminator import AMPDiscriminator
+from motion_loader import AMPLoader
+from utils import Normalizer
 
 class AMPOnPolicyRunner:
 

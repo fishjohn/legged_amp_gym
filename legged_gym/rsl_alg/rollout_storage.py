@@ -28,10 +28,17 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
+
 import torch
 import numpy as np
 
-from rsl_rl.utils import split_and_pad_trajectories
+from utils import split_and_pad_trajectories
 
 class RolloutStorage:
     class Transition:

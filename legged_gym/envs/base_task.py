@@ -28,14 +28,16 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import os
 import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+
 from isaacgym import gymapi
 from isaacgym import gymutil
-import numpy as np
+
 import torch
-
-from legged_gym.envs.base import observation_buffer
-
+import observation_buffer
 
 # Base class for RL tasks
 class BaseTask():

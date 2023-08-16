@@ -28,12 +28,17 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+
 import numpy as np
 from numpy.random import choice
 from scipy import interpolate
 
 from isaacgym import terrain_utils
-from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg
+from legged_robot_config import LeggedRobotCfg
 
 class Terrain:
     def __init__(self, cfg: LeggedRobotCfg.terrain, num_robots) -> None:

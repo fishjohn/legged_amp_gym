@@ -27,8 +27,12 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
+import os
+import sys
 
-from .base_config import BaseConfig
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+
+from base_config import BaseConfig
 
 class LeggedRobotCfg(BaseConfig):
     class env:

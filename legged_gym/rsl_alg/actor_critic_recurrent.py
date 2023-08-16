@@ -28,14 +28,21 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import os 
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
+
 import numpy as np
 
 import torch
 import torch.nn as nn
 from torch.distributions import Normal
 from torch.nn.modules import rnn
-from .actor_critic import ActorCritic, get_activation
-from rsl_rl.utils import unpad_trajectories
+from actor_critic import ActorCritic, get_activation
+from utils import unpad_trajectories
 
 class ActorCriticRecurrent(ActorCritic):
     is_recurrent = True

@@ -29,7 +29,7 @@
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 import glob
 
-from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
+from legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 
 MOTION_FILES = glob.glob('datasets/model_base_motions/*')
 

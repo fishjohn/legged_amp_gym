@@ -1,9 +1,15 @@
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
+
 import torch
 import torch.nn as nn
 import torch.utils.data
 from torch import autograd
-
-from rsl_rl.utils import utils
+import utils
 
 
 class AMPDiscriminator(nn.Module):

@@ -1,4 +1,6 @@
 import os
+import sys
+
 import glob
 import json
 import logging
@@ -7,9 +9,9 @@ import torch
 import numpy as np
 from pybullet_utils import transformations
 
-from rsl_rl.utils import utils
-from rsl_rl.datasets import pose3d
-from rsl_rl.datasets import motion_util
+import utils
+import pose3d
+import motion_util
 
 
 class AMPLoader:

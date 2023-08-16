@@ -28,12 +28,19 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../rsl_alg'))
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from rsl_rl.modules import ActorCritic
-from rsl_rl.storage import RolloutStorage
+from actor_critic import ActorCritic
+from rollout_storage import RolloutStorage
 
 class PPO:
     actor_critic: ActorCritic

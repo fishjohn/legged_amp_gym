@@ -28,11 +28,18 @@
 #
 # Copyright (c) 2021 ETH Zurich, Nikita Rudin
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../cfg'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../envs'))
+
 from legged_gym import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
-from legged_gym.envs.a1.a1_config import A1RoughCfg, A1RoughCfgPPO
-from .base.legged_robot import LeggedRobot
-from .a1.a1_config import A1RoughCfg, A1RoughCfgPPO
-from .a1.a1_amp_config import A1AMPCfg, A1AMPCfgPPO
+from legged_gym.cfg.a1_config import A1RoughCfg, A1RoughCfgPPO
+
+from legged_robot import LeggedRobot
+from a1_config import A1RoughCfg, A1RoughCfgPPO
+from a1_amp_config import A1AMPCfg, A1AMPCfgPPO
 
 
 import os
