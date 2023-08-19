@@ -77,18 +77,18 @@ class A1AMPCfg( LeggedRobotCfg ):
         # decimation: Number of control action updates @ sim DT per policy DT
         decimation = 4
 
-    # class terrain( LeggedRobotCfg.terrain ):
-    #     mesh_type = 'plane'
-    #     measure_heights = False
+    class terrain( LeggedRobotCfg.terrain ):
+        mesh_type = 'plane'
+        measure_heights = True
 
     class asset( LeggedRobotCfg.asset ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/a1/urdf/a1.urdf'
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
-        terminate_after_contacts_on = ["base"]
-        # terminate_after_contacts_on = [
-        #     "base", "FL_calf", "FR_calf", "RL_calf", "RR_calf",
-        #     "FL_thigh", "FR_thigh", "RL_thigh", "RR_thigh"]
+        # terminate_after_contacts_on = ["base"]
+        terminate_after_contacts_on = [
+            "base", "FL_calf", "FR_calf", "RL_calf", "RR_calf",
+            "FL_thigh", "FR_thigh", "RL_thigh", "RR_thigh"]
         self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
   
     # class domain_rand:
@@ -148,7 +148,7 @@ class A1AMPCfg( LeggedRobotCfg ):
             torques = -0.0002
             dof_pos_limits = -10.0
 
-            lin_vel_z = 0.0 # -0.5
+            lin_vel_z = -0.5 # -0.5
             ang_vel_xy = 0.0 #-0.001 TODO
             torques = -1e-4 # -1e-4
 
