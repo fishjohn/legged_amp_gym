@@ -84,45 +84,51 @@ class A1AMPCfg( LeggedRobotCfg ):
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
         terminate_after_contacts_on = ["base"]
-        # terminate_after_contacts_on = [
-        #     "base", "FL_calf", "FR_calf", "RL_calf", "RR_calf",
-        #     "FL_thigh", "FR_thigh", "RL_thigh", "RR_thigh"]
         self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
-  
-    # class domain_rand:
-    #     randomize_friction = True
-    #     friction_range = [0.25, 1.75]
-    #     randomize_base_mass = True
-    #     added_mass_range = [-1., 1.]
-    #     push_robots = True
-    #     push_interval_s = 15
-    #     max_push_vel_xy = 1.0
-    #     randomize_gains = True
-    #     stiffness_multiplier_range = [0.9, 1.1]
-    #     damping_multiplier_range = [0.9, 1.1]
-    #
-    # class noise:
-    #     add_noise = True
-    #     noise_level = 1.0 # scales other values
-    #     class noise_scales:
-    #         dof_pos = 0.03
-    #         dof_vel = 1.5
-    #         lin_vel = 0.1
-    #         ang_vel = 0.3
-    #         gravity = 0.05
-    #         height_measurements = 0.1
 
-    class rewards(LeggedRobotCfg.rewards):
+    class domain_rand:
+        randomize_friction = True
+        friction_range = [0.25, 1.75]
+        randomize_base_mass = True
+        added_mass_range = [-1., 1.]
+        push_robots = True
+        push_interval_s = 15
+        max_push_vel_xy = 1.0
+        randomize_gains = True
+        stiffness_multiplier_range = [0.9, 1.1]
+        damping_multiplier_range = [0.9, 1.1]
+
+    class noise:
+        add_noise = True
+        noise_level = 1.0 # scales other values
+        class noise_scales:
+            dof_pos = 0.03
+            dof_vel = 1.5
+            lin_vel = 0.1
+            ang_vel = 0.3
+            gravity = 0.05
+            height_measurements = 0.1
+
+    class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 0.3
-
-        class scales(LeggedRobotCfg.rewards.scales):
-            torques = -0.0002
-            dof_pos_limits = -10.0
-
-            lin_vel_z = -0.5  # -0.5
-            ang_vel_xy = 0.0  # -0.001 TODO
-            torques = -1e-4  # -1e-4
+        class scales( LeggedRobotCfg.rewards.scales ):
+            termination = 0.0
+            tracking_lin_vel = 1.0
+            tracking_ang_vel = 0.5
+            lin_vel_z = -0.0
+            ang_vel_xy = 0.0
+            orientation = 0.0
+            torques = -0.00001
+            dof_vel = 0.0
+            dof_acc = -2.5e-7
+            base_height = 0.0
+            feet_air_time = 1.0
+            collision = -0.1
+            feet_stumble = 0.0
+            action_rate = -0.1
+            stand_still = 0.0
+            dof_pos_limits = 0.0
 
     class commands( LeggedRobotCfg.commands ):
         curriculum = False
@@ -145,8 +151,8 @@ class A1AMPCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
         amp_replay_buffer_size = 1000000
-        # num_learning_epochs = 5
-        # num_mini_batches = 4
+        num_learning_epochs = 5
+        num_mini_batches = 4
 
     class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
@@ -155,12 +161,11 @@ class A1AMPCfgPPO( LeggedRobotCfgPPO ):
         policy_class_name = 'ActorCritic'
         max_iterations = 10000 # number of policy updates
 
-        amp_reward_coef = 0.005
+        amp_reward_coef = 0.01
         amp_motion_files = MOTION_FILES
-        amp_num_preload_transitions = 1000000
+        amp_num_preload_transitions = 2000000
         amp_task_reward_lerp = 0.3 # Not use
         amp_discr_hidden_dims = [1024, 512]
 
         min_normalized_std = [0.05, 0.02, 0.05] * 4
 
-  

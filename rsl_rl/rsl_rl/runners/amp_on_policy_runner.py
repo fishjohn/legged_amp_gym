@@ -152,8 +152,9 @@ class AMPOnPolicyRunner:
                     if self.log_dir is not None:
                         # Book keeping
                         if 'episode' in infos:
-                            infos["episode"]["rew_amp"] = torch.mean(amp_reward_sum[reset_env_ids]) / self.env.max_episode_length_s
-                            infos["episode"]["rew_task"] = torch.mean(task_reward_sum[reset_env_ids]) / self.env.max_episode_length_s
+                            if reset_env_ids.numel() != 0:
+                                infos["episode"]["rew_amp"] = torch.mean(amp_reward_sum[reset_env_ids]) / self.env.max_episode_length_s
+                                infos["episode"]["rew_task"] = torch.mean(task_reward_sum[reset_env_ids]) / self.env.max_episode_length_s
                             ep_infos.append(infos['episode'])
                         cur_reward_sum += tot_rewards
                         cur_episode_length += 1
