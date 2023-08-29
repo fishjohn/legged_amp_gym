@@ -116,8 +116,8 @@ class A1AMPCfg( LeggedRobotCfg ):
             termination = 0.0
             tracking_lin_vel = 1.0
             tracking_ang_vel = 0.5
-            lin_vel_z = -0.0
-            ang_vel_xy = 0.0
+            lin_vel_z = -2.0
+            ang_vel_xy = -0.05
             orientation = 0.0
             torques = -0.00001
             dof_vel = 0.0
@@ -137,10 +137,10 @@ class A1AMPCfg( LeggedRobotCfg ):
         resampling_time = 10. # time before command are changed[s]
         heading_command = False # if true: compute ang vel command from heading error
         class ranges:
-            lin_vel_x = [-1.0, 1.0] # min max [m/s]
+            lin_vel_x = [-1.0, 0.0] # min max [m/s]
             lin_vel_y = [-0.0, 0.0]   # min max [m/s]
             ang_vel_yaw = [-0, 0]    # min max [rad/s]
-            heading = [-3.14, 3.14]
+            heading = [-0, 0]
 
 class A1AMPCfgPPO( LeggedRobotCfgPPO ):
     runner_class_name = 'AMPOnPolicyRunner'

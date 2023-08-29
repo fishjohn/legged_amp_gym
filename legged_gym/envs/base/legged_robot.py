@@ -1046,7 +1046,7 @@ class LeggedRobot(BaseTask):
         rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
-        return rew_airTime
+        return torch.min(rew_airTime, torch.zeros_like(rew_airTime))
     
     def _reward_stumble(self):
         # Penalize feet hitting vertical surfaces
