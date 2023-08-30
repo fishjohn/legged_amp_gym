@@ -128,6 +128,9 @@ class AMPOnPolicyRunner:
         tot_iter = self.current_learning_iteration + num_learning_iterations
         for it in range(self.current_learning_iteration, tot_iter):
             start = time.time()
+
+            if it > 1500:
+                self.alg.discriminator.set_amp_reward_coef(0.05)
             # Rollout
             with torch.inference_mode():
                 for i in range(self.num_steps_per_env):

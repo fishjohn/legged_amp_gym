@@ -1,7 +1,7 @@
 {
     "EnableCycleOffsetPosition": true,
     "EnableCycleOffsetRotation": true,
-    "FrameDuration": 0.03,
+    "FrameDuration": 0.02,
     "Frames": [
         [
             2.0398545265197754,
