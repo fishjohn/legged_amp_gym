@@ -111,18 +111,18 @@ class A1AMPCfg( LeggedRobotCfg ):
 
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.3
+        base_height_target = 0.25
         class scales( LeggedRobotCfg.rewards.scales ):
             termination = 0.0
             tracking_lin_vel = 1.0
             tracking_ang_vel = 0.5
-            lin_vel_z = -2.0
-            ang_vel_xy = -0.05
+            lin_vel_z = -0.0
+            ang_vel_xy = -0.00
             orientation = 0.0
             torques = -0.00001
             dof_vel = 0.0
             dof_acc = -2.5e-7
-            base_height = 0.0
+            base_height = -0.5
             feet_air_time = 1.0
             collision = -0.1
             feet_stumble = 0.0
@@ -161,7 +161,7 @@ class A1AMPCfgPPO( LeggedRobotCfgPPO ):
         policy_class_name = 'ActorCritic'
         max_iterations = 10000 # number of policy updates
 
-        amp_reward_coef = 0.00
+        amp_reward_coef = 0.5
         amp_motion_files = MOTION_FILES
         amp_num_preload_transitions = 2000000
         amp_task_reward_lerp = 0.3 # Not use

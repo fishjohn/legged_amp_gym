@@ -75,10 +75,10 @@ class AMPOnPolicyRunner:
             device, time_between_frames=self.env.dt, preload_transitions=True,
             num_preload_transitions=train_cfg['runner']['amp_num_preload_transitions'],
             motion_files=self.cfg["amp_motion_files"])
-        amp_normalizer = Normalizer(amp_data.observation_dim)
+        amp_normalizer = None
         discriminator = AMPDiscriminator(
             amp_data.observation_dim * 2,
-            train_cfg['runner']['amp_reward_coef'],
+            train_cfg['runner']['amp_reward_coef'] * self.env.dt,
             train_cfg['runner']['amp_discr_hidden_dims'], device,
             train_cfg['runner']['amp_task_reward_lerp']).to(self.device)
 
@@ -129,8 +129,6 @@ class AMPOnPolicyRunner:
         for it in range(self.current_learning_iteration, tot_iter):
             start = time.time()
 
-            if it > 1500:
-                self.alg.discriminator.set_amp_reward_coef(0.05)
             # Rollout
             with torch.inference_mode():
                 for i in range(self.num_steps_per_env):
