@@ -161,7 +161,7 @@ class A1AMPCfgPPO( LeggedRobotCfgPPO ):
         policy_class_name = 'ActorCritic'
         max_iterations = 10000 # number of policy updates
 
-        amp_reward_coef = 0.01
+        amp_reward_coef = 0.05
         amp_motion_files = MOTION_FILES
         amp_num_preload_transitions = 2000000
         amp_task_reward_lerp = 0.3 # Not use
