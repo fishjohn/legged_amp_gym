@@ -32,3 +32,4 @@ import os
 
 LEGGED_GYM_ROOT_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 LEGGED_GYM_ENVS_DIR = os.path.join(LEGGED_GYM_ROOT_DIR, 'legged_gym', 'envs')
+LEGGED_GYM_DATA_SAVE_DIR = '/home/luohx/Data/legged_amp_gym/logs/a1_amp_example'
