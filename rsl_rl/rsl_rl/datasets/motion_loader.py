@@ -77,6 +77,7 @@ class AMPLoader:
             with open(motion_file, "r") as f:
                 motion_json = json.load(f)
                 motion_data = np.array(motion_json["Frames"])
+                # motion_data = self.reorder_from_pybullet_to_isaac(motion_data)
 
                 # Normalize and standardize quaternions.
                 for f_i in range(motion_data.shape[0]):
@@ -89,13 +90,12 @@ class AMPLoader:
                     (AMPLoader.POS_SIZE +
                      AMPLoader.ROT_SIZE)] = root_rot
 
-                amp_data = np.hstack([motion_data[:, AMPLoader.JOINT_POSE_START_IDX:AMPLoader.JOINT_POSE_END_IDX],
-                                      motion_data[:, AMPLoader.JOINT_VEL_START_IDX:AMPLoader.JOINT_VEL_END_IDX],
-                                      motion_data[:, AMPLoader.LINEAR_VEL_START_IDX:AMPLoader.LINEAR_VEL_END_IDX],
-                                      motion_data[:, AMPLoader.ANGULAR_VEL_START_IDX:AMPLoader.ANGULAR_VEL_END_IDX],
-                                      motion_data[:,
-                                      AMPLoader.ROOT_POS_START_IDX + 2:AMPLoader.ROOT_POS_START_IDX + 3]])
-                self.trajectories.append(torch.tensor(amp_data, dtype=torch.float32, device=device))
+                # Remove first 7 observation dimensions (root_pos and root_orn).
+                self.trajectories.append(torch.tensor(
+                    motion_data[
+                    :,
+                    AMPLoader.ROOT_ROT_END_IDX:AMPLoader.JOINT_VEL_END_IDX
+                    ], dtype=torch.float32, device=device))
                 self.trajectories_full.append(torch.tensor(
                     motion_data[:, :AMPLoader.JOINT_VEL_END_IDX],
                     dtype=torch.float32, device=device))
@@ -287,20 +287,15 @@ class AMPLoader:
             if self.preload_transitions:
                 idxs = np.random.choice(
                     self.preloaded_s.shape[0], size=mini_batch_size)
+                s = self.preloaded_s[idxs, AMPLoader.JOINT_POSE_START_IDX:AMPLoader.JOINT_VEL_END_IDX]
                 s = torch.cat([
-                    self.preloaded_s[idxs, AMPLoader.JOINT_POSE_START_IDX:AMPLoader.JOINT_POSE_END_IDX],
-                    self.preloaded_s[idxs, AMPLoader.JOINT_VEL_START_IDX:AMPLoader.JOINT_VEL_END_IDX],
-                    self.preloaded_s[idxs, AMPLoader.LINEAR_VEL_START_IDX:AMPLoader.LINEAR_VEL_END_IDX],
-                    self.preloaded_s[idxs, AMPLoader.ANGULAR_VEL_START_IDX:AMPLoader.ANGULAR_VEL_END_IDX],
-                    self.preloaded_s[idxs, AMPLoader.ROOT_POS_START_IDX + 2:AMPLoader.ROOT_POS_START_IDX + 3]
-                ], dim=-1)
+                    s,
+                    self.preloaded_s[idxs, AMPLoader.ROOT_POS_START_IDX + 2:AMPLoader.ROOT_POS_START_IDX + 3]], dim=-1)
+                s_next = self.preloaded_s_next[idxs, AMPLoader.JOINT_POSE_START_IDX:AMPLoader.JOINT_VEL_END_IDX]
                 s_next = torch.cat([
-                    self.preloaded_s_next[idxs, AMPLoader.JOINT_POSE_START_IDX:AMPLoader.JOINT_POSE_END_IDX],
-                    self.preloaded_s_next[idxs, AMPLoader.JOINT_VEL_START_IDX:AMPLoader.JOINT_VEL_END_IDX],
-                    self.preloaded_s_next[idxs, AMPLoader.LINEAR_VEL_START_IDX:AMPLoader.LINEAR_VEL_END_IDX],
-                    self.preloaded_s_next[idxs, AMPLoader.ANGULAR_VEL_START_IDX:AMPLoader.ANGULAR_VEL_END_IDX],
-                    self.preloaded_s_next[idxs, AMPLoader.ROOT_POS_START_IDX + 2:AMPLoader.ROOT_POS_START_IDX + 3]
-                ], dim=-1)
+                    s_next,
+                    self.preloaded_s_next[idxs, AMPLoader.ROOT_POS_START_IDX + 2:AMPLoader.ROOT_POS_START_IDX + 3]],
+                    dim=-1)
             else:
                 s, s_next = [], []
                 traj_idxs = self.weighted_traj_idx_sample_batch(mini_batch_size)
@@ -318,7 +313,7 @@ class AMPLoader:
     @property
     def observation_dim(self):
         """Size of AMP observations."""
-        return self.trajectories[0].shape[1]
+        return self.trajectories[0].shape[1] + 1
 
     @property
     def num_motions(self):
