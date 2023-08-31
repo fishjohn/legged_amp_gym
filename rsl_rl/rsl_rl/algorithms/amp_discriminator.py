@@ -52,9 +52,6 @@ class AMPDiscriminator(nn.Module):
         grad_pen = lambda_ * (grad.norm(2, dim=1) - 0).pow(2).mean()
         return grad_pen
 
-    def set_amp_reward_coef(self, coef):
-        self.amp_reward_coef = coef
-
     def predict_amp_reward(
             self, state, next_state, task_reward, normalizer=None):
         with torch.no_grad():

@@ -49,20 +49,20 @@ class A1AMPCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
         default_joint_angles = {  # = target angles [rad] when action = 0.0
-            'FL_hip_joint': 0.0,  # [rad]
-            'RL_hip_joint': 0.0,  # [rad]
-            'FR_hip_joint': 0.0,  # [rad]
-            'RR_hip_joint': 0.0,  # [rad]
+            'FL_hip_joint': -0.20,   # [rad]
+            'RL_hip_joint': -0.20,   # [rad]
+            'FR_hip_joint':  0.20,  # [rad]
+            'RR_hip_joint':  0.20,   # [rad]
 
-            'FL_thigh_joint': 0.9,  # [rad]
-            'RL_thigh_joint': 0.9,  # [rad]
-            'FR_thigh_joint': 0.9,  # [rad]
-            'RR_thigh_joint': 0.9,  # [rad]
+            'FL_thigh_joint': 0.72,     # [rad]
+            'RL_thigh_joint': 0.72,   # [rad]
+            'FR_thigh_joint': 0.72,     # [rad]
+            'RR_thigh_joint': 0.72,   # [rad]
 
-            'FL_calf_joint': -1.8,  # [rad]
-            'RL_calf_joint': -1.8,  # [rad]
-            'FR_calf_joint': -1.8,  # [rad]
-            'RR_calf_joint': -1.8,  # [rad]
+            'FL_calf_joint': -1.44,   # [rad]
+            'RL_calf_joint': -1.44,    # [rad]
+            'FR_calf_joint': -1.44,  # [rad]
+            'RR_calf_joint': -1.44,    # [rad]
         }
 
     class control( LeggedRobotCfg.control ):
@@ -111,7 +111,7 @@ class A1AMPCfg( LeggedRobotCfg ):
 
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.25
+        base_height_target = 0.3
         class scales( LeggedRobotCfg.rewards.scales ):
             termination = 0.0
             tracking_lin_vel = 1.0
@@ -122,7 +122,7 @@ class A1AMPCfg( LeggedRobotCfg ):
             torques = -0.00001
             dof_vel = 0.0
             dof_acc = -2.5e-7
-            base_height = -0.5
+            base_height = -0.0
             feet_air_time = 1.0
             collision = -0.1
             feet_stumble = 0.0
