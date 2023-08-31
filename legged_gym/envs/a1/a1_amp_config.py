@@ -126,7 +126,7 @@ class A1AMPCfg( LeggedRobotCfg ):
             feet_air_time = 1.0
             collision = -0.1
             feet_stumble = 0.0
-            action_rate = -0.1
+            action_rate = -0.01
             stand_still = 0.0
             dof_pos_limits = 0.0
 
