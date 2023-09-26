@@ -264,7 +264,7 @@ class AMPOnPolicyRunner:
     def save(self, path, infos=None):
         torch.save({
             'model_state_dict': self.alg.actor_critic.state_dict(),
-            'optimizer_state_dict': self.alg.optimizer.state_dict(),
+            'optimizer_state_dict': self.alg.ac_optimizer.state_dict(),
             'discriminator_state_dict': self.alg.discriminator.state_dict(),
             'amp_normalizer': self.alg.amp_normalizer,
             'iter': self.current_learning_iteration,
@@ -277,7 +277,7 @@ class AMPOnPolicyRunner:
         self.alg.discriminator.load_state_dict(loaded_dict['discriminator_state_dict'])
         self.alg.amp_normalizer = loaded_dict['amp_normalizer']
         if load_optimizer:
-            self.alg.optimizer.load_state_dict(loaded_dict['optimizer_state_dict'])
+            self.alg.ac_optimizer.load_state_dict(loaded_dict['optimizer_state_dict'])
         self.current_learning_iteration = loaded_dict['iter']
         return loaded_dict['infos']
 
