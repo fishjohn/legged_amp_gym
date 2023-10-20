@@ -4,7 +4,7 @@ import torch.utils.data
 from torch import autograd
 
 from rsl_rl.utils import utils
-
+DISC_LOGIT_INIT_SCALE = 1.0
 
 class AMPDiscriminator(nn.Module):
     def __init__(
@@ -23,6 +23,14 @@ class AMPDiscriminator(nn.Module):
             curr_in_dim = hidden_dim
         self.trunk = nn.Sequential(*amp_layers).to(device)
         self.amp_linear = nn.Linear(hidden_layer_sizes[-1], 1).to(device)
+
+        for m in self.trunk.modules():
+            if isinstance(m, nn.Linear):
+                torch.nn.init.uniform_(m.weight, -DISC_LOGIT_INIT_SCALE, DISC_LOGIT_INIT_SCALE)
+                if getattr(m, "bias", None) is not None:
+                    torch.nn.init.zeros_(m.bias)
+        torch.nn.init.uniform_(self.amp_linear.weight, -DISC_LOGIT_INIT_SCALE, DISC_LOGIT_INIT_SCALE)
+        torch.nn.init.zeros_(self.amp_linear.bias)
 
         self.trunk.train()
         self.amp_linear.train()
@@ -49,7 +57,7 @@ class AMPDiscriminator(nn.Module):
             retain_graph=True, only_inputs=True)[0]
 
         # Enforce that the grad norm approaches 0.
-        grad_pen = lambda_ * (grad.norm(2, dim=1) - 0).pow(2).mean()
+        grad_pen = lambda_ / 2 * (grad.norm(2, dim=1) - 0).pow(2).mean()
         return grad_pen
 
     def predict_amp_reward(
